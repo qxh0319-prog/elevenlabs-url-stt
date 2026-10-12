@@ -6,7 +6,7 @@ import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const WINDOW_MS = 60 * 60 * 1000;
-const MAX_REQUESTS_PER_HOUR = Number(process.env.MAX_REQUESTS_PER_HOUR || 10);
+const MAX_REQUESTS_PER_HOUR = Number(process.env.MAX_REQUESTS_PER_HOUR || 100);
 const requestLog = new Map();
 
 app.set("trust proxy", 1);
@@ -107,6 +107,10 @@ app.post("/api/transcribe-url", requireAccessPassword, rateLimit, async (req, re
   }
 });
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`ElevenLabs URL 转录工具已启动：http://localhost:${PORT}`);
-});
+export default app;
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`ElevenLabs URL 转录工具已启动：http://localhost:${PORT}`);
+  });
+}
