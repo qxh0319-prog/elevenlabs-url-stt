@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: elevenlabs-url-stt
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/status
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: ELEVENLABS_API_KEY
+        sync: false
