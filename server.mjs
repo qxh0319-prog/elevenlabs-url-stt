@@ -53,22 +53,22 @@ function splitUtf8(text, maxBytes = 450) {
   return chunks;
 }
 
-async function translateToChinese(text, sourceLanguage = "auto") {
+async function translateToChinese(text) {
   if (!text) return "";
-  const source = /^[a-z]{2}$/i.test(sourceLanguage || "") ? sourceLanguage.toLowerCase() : "auto";
-  const chunks = splitUtf8(text);
+  const chunks = splitUtf8(text, 1200);
   const translated = [];
   for (const chunk of chunks) {
-    const endpoint = new URL("https://api.mymemory.translated.net/get");
+    const endpoint = new URL("https://translate.googleapis.com/translate_a/single");
+    endpoint.searchParams.set("client", "gtx");
+    endpoint.searchParams.set("sl", "auto");
+    endpoint.searchParams.set("tl", "zh-CN");
+    endpoint.searchParams.set("dt", "t");
     endpoint.searchParams.set("q", chunk);
-    endpoint.searchParams.set("langpair", `${source}|zh-CN`);
     const response = await fetch(endpoint, { signal: AbortSignal.timeout(15000) });
     if (!response.ok) throw new Error(`翻译服务响应异常（${response.status}）`);
     const data = await response.json();
-    const value = data?.responseData?.translatedText;
-    if (!value || Number(data?.responseStatus || 200) >= 400) {
-      throw new Error(data?.responseDetails || "翻译服务暂时不可用");
-    }
+    const value = Array.isArray(data?.[0]) ? data[0].map((item) => item?.[0] || "").join("") : "";
+    if (!value) throw new Error("免费翻译服务暂时不可用");
     translated.push(value);
   }
   return translated.join("");
